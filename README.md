@@ -371,6 +371,91 @@ In this step, we will install and configure the **DHCP Server** role on the serv
 
 By following these steps, we will have successfully installed and configured the DHCP Server role and created a DHCP scope that automatically assigns IP addresses to devices on your network.
 
+### 7. Monitoring with Sysmon
+
+#### 7.1 Sysmon Installation
+
+**Sysmon (System Monitor)** is a powerful tool from the Sysinternals suite used for monitoring system activity and enhancing security logging.
+
+---
+
+#### Steps to Install and Configure Sysmon:
+
+1. **Download Sysmon**:
+   - Visit the [Sysinternals website](https://learn.microsoft.com/en-us/sysinternals/) and download **Sysmon**.
+
+2. **Prepare Configuration File**:
+   - Create or download a Sysmon configuration file (`config.xml`) tailored to your logging needs.
+     - For a detailed example, you can use the [SwiftOnSecurity Sysmon Config](https://github.com/SwiftOnSecurity/sysmon-config), a popular prebuilt configuration that captures a broad range of events.
+
+3. **Install Sysmon**:
+   - Open a **Command Prompt** or **PowerShell** with administrative privileges.
+   - Run the following command to install Sysmon and specify your configuration file:
+     ```cmd
+     Sysmon64.exe -accepteula -i config.xml
+     ```
+     - `-accepteula`: Automatically accepts the license agreement.
+     - `-i config.xml`: Installs Sysmon with the specified configuration.
+
+4. **Verify Installation**:
+   - After installation, Sysmon runs as a service in the background.
+   - Confirm that the Sysmon service is active by typing:
+     ```cmd
+     sc query sysmon64
+     ```
+
+---
+
+#### Configure Logging to Capture Events:
+
+Ensure the Sysmon configuration file includes the following event types for monitoring:
+
+1. **Process Creations**:
+   - Logs every time a process is created.
+   - Example:
+     ```xml
+     <EventFiltering>
+       <ProcessCreate onmatch="include">
+         <Rule groupRelation="or">
+           <Image condition="contains">cmd.exe</Image>
+           <Image condition="contains">powershell.exe</Image>
+         </Rule>
+       </ProcessCreate>
+     </EventFiltering>
+     ```
+
+2. **File Creation Events**:
+   - Tracks when files are created or modified.
+   - Example:
+     ```xml
+     <FileCreate onmatch="include">
+       <TargetFilename condition="ends with">.exe</TargetFilename>
+     </FileCreate>
+     ```
+
+3. **Network Connections**:
+   - Captures outgoing and incoming network connections.
+   - Example:
+     ```xml
+     <NetworkConnect onmatch="include" />
+     ```
+
+---
+
+#### Post-Installation Check:
+
+1. **View Sysmon Logs**:
+   - Open **Event Viewer**.
+   - Navigate to: 
+     **Applications and Services Logs** → **Microsoft** → **Sysmon**.
+   - Ensure events for process creations, file creations, and network connections are being logged.
+
+2. **Test Functionality**:
+   - Perform actions like running `cmd.exe`, creating test files, or initiating network connections to generate logs.
+   - Confirm these events are recorded in the Sysmon log.
+
+With Sysmon installed and configured, we now have an advanced logging mechanism to monitor and analyze system activity in detail.
+
 ### 7.2 Analyze Sysmon Logs
 
 In this step, we will analyze **Sysmon** logs to monitor and investigate user activities for Alice and Bob.
